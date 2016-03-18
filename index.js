@@ -28,49 +28,49 @@
 
     var applyFilterToPixel = function (pixel) {
         var filters = {
-            invert: function (pixel) {
-                pixel[0] = 255 - pixel[0];
-                pixel[1] = 255 - pixel[1];
-                pixel[2] = 255 - pixel[2];
-
-                return pixel;
+            invert: function () {
+                for (var i = 0; i < pixel.length; i += 4) {
+                    pixel[i] = 255 - pixel[i];
+                    pixel[i+1] = 255 - pixel[i+1];
+                    pixel[i+2] = 255 - pixel[i+2];
+                }
+                
             },
-            grayscale: function (pixel) {
-                var r = pixel[0];
-                var g = pixel[1];
-                var b = pixel[2];
-                var v = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+            grayscale: function () {
+                for (var i = 0; i < pixel.length; i += 4) {
+                    var r = pixel[i];
+                    var g = pixel[i+1];
+                    var b = pixel[i+2];
+                    var v = 0.2126 * r + 0.7152 * g + 0.0722 * b;
 
-                pixel[0] = pixel[1] = pixel[2] = v;
-
-                return pixel;
+                    pixel[i] = pixel[i+1] = pixel[i+2] = v;
+                }
+                
             },
-            threshold: function (pixel) {
-                var r = pixel[0];
-                var g = pixel[1];
-                var b = pixel[2];
-                var v = (0.2126 * r + 0.7152 * g + 0.0722 * b >= 128) ? 255 : 0;
-                pixel[0] = pixel[1] = pixel[2] = v;
-
-                return pixel;
+            threshold: function () {
+                for (var i = 0; i < pixel.length; i += 4) {
+                    var r = pixel[i];
+                    var g = pixel[i+1];
+                    var b = pixel[i+2];
+                    var v = (0.2126 * r + 0.7152 * g + 0.0722 * b >= 128) ? 255 : 0;
+                    pixel[i] = pixel[i+1] = pixel[i+2] = v;
+                }                
             }
         };
 
         var filterName = document.querySelector('.controls__filter').value;
 
-        return filters[filterName](pixel);
+        return filters[filterName]();
     };
 
     var applyFilter = function () {
-        for (var x = 0; x < canvas.width; x++) {
-            for (var y = 0; y < canvas.height; y++) {
-                var pixel = canvas.getContext('2d').getImageData(x, y, 1, 1);
 
-                pixel.data = applyFilterToPixel(pixel.data);
+        var context = canvas.getContext('2d');
+        var imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+        var pixel = imageData.data;
+        pixel = applyFilterToPixel(pixel);
 
-                canvas.getContext('2d').putImageData(pixel, x, y);
-            }
-        }
+        context.putImageData(imageData, 0, 0);
     };
 
     var captureFrame = function () {
